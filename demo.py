@@ -8,7 +8,7 @@ def main():
     print("\n1. Sending test email...")
     result = send_email(
         cred_filepath=cred_filepath,
-        to="benbuzz790@gmail.com",
+        to="benbuzz790@gmail.com", # replace with email from your credentials
         cc="",
         bcc="",
         subject="TEST EMAIL",

@@ -1,5 +1,7 @@
 # Gmail Service Account Setup Instructions
 
+NOTE: THIS GUIDE HAS NOT BEEN TESTED.
+
 ## Overview
 This guide explains how to set up a Google Cloud Service Account for automated Gmail access. This approach is ideal for LLM integration as it:
 - Never requires browser interaction
@@ -8,9 +10,13 @@ This guide explains how to set up a Google Cloud Service Account for automated G
 - Provides stable, long-term automation capabilities
 
 ## Prerequisites
-1. A Google Workspace (formerly G Suite) account with admin access
-2. Access to Google Cloud Console
-3. Gmail API enabled in your Google Cloud project
+Before beginning, ensure you have the following:
+
+1. A Google Cloud Project: You'll need an active Google Cloud project. If you don't have one, create a new project. Note the project ID, as it will be needed throughout the setup.
+2. Google Workspace Account with Admin Privileges: A Google Workspace account with administrator privileges is required for domain-wide delegation. This allows the service account to access Gmail on behalf of your organization.
+3. Google Cloud Console Access: You need access to the Google Cloud Console to manage service accounts and APIs.
+4. Enabled Gmail API: The Gmail API must be enabled within your Google Cloud project. You can enable this in the Google Cloud Console under APIs & Services.
+5. Basic Python Knowledge: This guide assumes familiarity with basic Python concepts for configuring the application's authentication.
 
 ## Step-by-Step Setup
 
