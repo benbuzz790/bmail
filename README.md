@@ -28,7 +28,7 @@ Key Features:
 ## Installation
 
 ```bash
-pip install -r requirements.txt
+pip install git+https://github.com/benbuzz790/bmail.git
 ```
 
 Dependencies:
