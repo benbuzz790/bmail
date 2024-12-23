@@ -1,6 +1,8 @@
-# LLM Email System
+# bmail
 
-A minimalist, string-based email client designed for LLM integration.
+A minimalist, string-based email client designed for LLM integration. This library is designed to be used with benbuzz790/bots via bot.add_tools(bmail.llm_email_tools)
+
+As much as I tried, it doesn't "just work" - gmail has significant overhead and setup required before an automation can use your account.
 
 ## Table of Contents
 - [Overview](#overview)
