@@ -4,9 +4,9 @@ from email import message_from_string
 from email.message import EmailMessage
 from email.mime.text import MIMEText
 import base64
-from auth import get_gmail_service
-import storage
-import gmail_client
+from .auth import get_gmail_service
+from . import storage
+from . import gmail_client
 
 
 def send_email(creds_path: str, to_addr: str, cc: str, bcc: str, subject:
