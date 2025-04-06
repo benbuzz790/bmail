@@ -1,4 +1,4 @@
-from llm_email_tools import send_email, check_inbox, read_email, archive_emails
+from bmail.llm_email_tools import send_email, check_inbox, read_email, archive_emails
 import time
 
 def main():

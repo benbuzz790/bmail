@@ -2,8 +2,7 @@ import unittest
 import os
 from pathlib import Path
 import shutil
-from storage import save_email, read_email, move_email, list_emails, delete_email
-
+from bmail.storage import save_email, read_email, move_email, list_emails, delete_email
 
 class TestStorage(unittest.TestCase):
     """Test cases for storage.py functionality."""
@@ -11,8 +10,7 @@ class TestStorage(unittest.TestCase):
     def setUp(self):
         """Create test folders and sample data before each test."""
         self.test_folders = ['inbox', 'sent', 'archive']
-        self.sample_email = (
-            b'From: test@example.com\nSubject: Test\n\nTest content')
+        self.sample_email = b'From: test@example.com\nSubject: Test\n\nTest content'
         self.test_email_id = 'test1.eml'
         for folder in self.test_folders:
             Path(folder).mkdir(exist_ok=True)

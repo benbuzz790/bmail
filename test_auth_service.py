@@ -1,7 +1,6 @@
 import unittest
 import os
-from auth_service import get_gmail_service, verify_service_account_setup
-
+from bmail.auth_service import get_gmail_service, verify_service_account_setup
 
 class TestServiceAuth(unittest.TestCase):
     """Test cases for service account authentication."""
@@ -11,9 +10,7 @@ class TestServiceAuth(unittest.TestCase):
         """Set up test environment."""
         cls.service_account_path = 'service-credentials.json'
         if not os.path.exists(cls.service_account_path):
-            raise unittest.SkipTest(
-                'service-credentials.json not found - skipping service account tests'
-                )
+            raise unittest.SkipTest('service-credentials.json not found - skipping service account tests')
 
     def test_service_account_verification(self):
         """Test service account configuration verification."""
@@ -30,8 +27,7 @@ class TestServiceAuth(unittest.TestCase):
             profile = service.users().getProfile(userId='me').execute()
             self.assertIn('@', profile['emailAddress'])
         except Exception as e:
-            self.fail(f'Failed to use Gmail API with service account: {str(e)}'
-                )
+            self.fail(f'Failed to use Gmail API with service account: {str(e)}')
 
     def test_missing_credentials(self):
         """Test handling of missing service account file."""

@@ -1,7 +1,6 @@
 import unittest
-import llm_email_tools
+from bmail import llm_email_tools
 import time
-
 
 class TestLLMEmailTools(unittest.TestCase):
     """Test LLM email tools interface."""
@@ -17,8 +16,7 @@ class TestLLMEmailTools(unittest.TestCase):
 
     def test_1_send_email(self):
         """Test sending an email."""
-        result = llm_email_tools.send_email(self.cred_filepath, self.
-            test_email, '', '', self.test_subject, self.test_body)
+        result = llm_email_tools.send_email(self.cred_filepath, self.test_email, '', '', self.test_subject, self.test_body)
         self.assertTrue('successfully' in result.lower())
         if 'Message ID: ' in result:
             self.__class__.email_id = result.split('Message ID: ')[1]
@@ -28,8 +26,7 @@ class TestLLMEmailTools(unittest.TestCase):
         """Test inbox listing."""
         result = llm_email_tools.check_inbox(self.cred_filepath)
         self.assertIsInstance(result, str)
-        result = llm_email_tools.check_inbox(self.cred_filepath, query=
-            f'subject:"{self.test_subject}"')
+        result = llm_email_tools.check_inbox(self.cred_filepath, query=f'subject:"{self.test_subject}"')
         self.assertIsInstance(result, str)
         self.assertTrue(self.test_subject in result)
         self.assertTrue(self.test_email in result)
@@ -42,17 +39,13 @@ class TestLLMEmailTools(unittest.TestCase):
         self.assertTrue(self.test_subject in result)
         self.assertTrue(self.test_body in result)
         reply_text = 'This is an automated test reply.'
-        result = llm_email_tools.reply_to_email(self.cred_filepath, self.
-            email_id, reply_text)
+        result = llm_email_tools.reply_to_email(self.cred_filepath, self.email_id, reply_text)
         self.assertTrue('successfully' in result.lower())
 
     def test_4_archive(self):
         """Test archiving the test email."""
         self.assertIsNotNone(self.email_id, 'No test email ID available')
-        result = llm_email_tools.archive_emails(self.cred_filepath, self.
-            email_id)
+        result = llm_email_tools.archive_emails(self.cred_filepath, self.email_id)
         self.assertTrue('successfully' in result.lower())
-
-
 if __name__ == '__main__':
     unittest.main()
