@@ -33,17 +33,26 @@ Before beginning, ensure you have the following:
 7. Skip role assignment (roles will be handled via domain-wide delegation)
 8. Click "Done"
 
+### 1.5 Enable Gmail API:
+1. Go to project overview
+2. Search for Gmail API
+3. Click Enable
+
 ### 2. Enable Domain-Wide Delegation
 1. Find your service account in the list
 2. Click on the email address
 3. Go to "Keys" tab
 4. Click "Add Key" > "Create new key"
 5. Choose JSON format
-6. Download and save as `service-credentials.json`
-7. Go to "Details" tab
-8. Click "Edit" (pencil icon)
-9. Enable "Domain-wide Delegation"
-10. Save
+6. Download and save as `credentials.json`
+6.5 If you see a message about key creation being disabled, " The organization policy constraint 'iam.disableServiceAccountKeyCreation' is enforced. This constraint disables the creation of new service account keys. "
+   1- Go to google cloud
+   2- Click to select the project/organization
+   3- Click on "More Action" (the 3 points on the right side)
+   4- Click on IAM/PERMISSIONS
+   5- Edit your user and add Roles: "Organization Policy Administrator" and "Organization Administrator". (Note that Organization Policy Administrator should be visible at this level, if you are at the project level, this policy won't be available in the list).
+   6- Now with those 2 roles, click on "Organization Policies" under IAM & Admin or repeat points 2/3 above and then select "Organization Policies".
+   7- Search for "Disable service account key creation" and you should be able to click on Edit Policy and change the rule.
 
 ### 3. Configure Google Workspace
 1. Go to [Google Workspace Admin Console](https://admin.google.com)
@@ -61,19 +70,16 @@ Before beginning, ensure you have the following:
 6. Click "Authorize"
 
 ### 4. Configure Application
-1. Place `service-credentials.json` in your project root
-2. Update email address in auth_service.py:
+
+1. Place your service account key file as `__credentials.json` in your project root
+2. Update email address in auth.py:
    ```python
    delegated_credentials = credentials.with_subject('your-user@your-domain.com')
    ```
-
-## Verification
-Run the verification tool:
-```python
-from auth_service import verify_service_account_setup
-result = verify_service_account_setup('service-credentials.json')
-print(result)
-```
+3. Verify setup by running the test suite:
+   ```bash
+   pytest test_auth.py -v
+   ```
 
 ## Troubleshooting
 
