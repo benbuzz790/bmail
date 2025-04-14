@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 setup(
     name="bmail",
     version="0.1.0",
-    author="Ben Buzzell",
+    author="Ben Rinauto",
     author_email="benbuzz790@gmail.com",
     description="A simple Gmail client library designed for LLM integration",
     long_description=open("README.md").read(),
