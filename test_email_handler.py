@@ -11,10 +11,10 @@ class TestEmailHandler(unittest.TestCase):
         """Set up test environment."""
         for folder in ['inbox', 'sent', 'archive']:
             os.makedirs(folder, exist_ok=True)
-        cls.creds_path = 'credentials.json'
+        cls.creds_path = '__credentials.json'
         if not os.path.exists(cls.creds_path):
-            raise unittest.SkipTest('credentials.json not found - skipping tests')
-        cls.test_recipient = 'benbuzz790@gmail.com'
+            raise unittest.SkipTest('__credentials.json not found - skipping tests')
+        cls.test_recipient = 'ben.rinauto@brwspace.com'
         cls.test_subject = 'Test Email Subject'
         cls.test_body = 'This is a test email body.'
 

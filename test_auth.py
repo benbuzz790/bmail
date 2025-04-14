@@ -4,26 +4,28 @@ from bmail.auth import get_gmail_service
 from googleapiclient.discovery import Resource
 
 class TestAuth(unittest.TestCase):
-    """Test cases for Gmail authentication functionality."""
+    """Test cases for Gmail service account authentication."""
 
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         """Set up test environment."""
-        self.valid_credentials_path = 'credentials.json'
-        self.invalid_credentials_path = 'nonexistent.json'
-        if os.path.exists('token.pickle'):
-            os.remove('token.pickle')
+        cls.credentials_path = '__credentials.json'
+        if not os.path.exists(cls.credentials_path):
+            raise unittest.SkipTest('__credentials.json not found - skipping service account tests')
 
-    def test_missing_credentials_file(self):
-        """Test error handling when credentials file is missing."""
-        result = get_gmail_service(self.invalid_credentials_path)
-        self.assertIsInstance(result, str)
-        self.assertTrue('Error: Credentials file not found' in result)
+    def test_get_service(self):
+        """Test getting Gmail service with service account."""
+        service = get_gmail_service(self.credentials_path)
+        self.assertNotIsInstance(service, str)
+        try:
+            profile = service.users().getProfile(userId='me').execute()
+            self.assertIn('@', profile['emailAddress'])
+            self.assertEqual(profile['emailAddress'], 'ben.rinauto@brwspace.com')
+        except Exception as e:
+            self.fail(f'Failed to use Gmail API with service account: {str(e)}')
 
-    def test_successful_authentication(self):
-        """Test successful Gmail API authentication with valid credentials."""
-        if not os.path.exists(self.valid_credentials_path):
-            self.skipTest('credentials.json not found - skipping live API test')
-        service = get_gmail_service(self.valid_credentials_path)
-        self.assertIsInstance(service, Resource)
-if __name__ == '__main__':
-    unittest.main()
+    def test_missing_credentials(self):
+        """Test handling of missing service account file."""
+        service = get_gmail_service('nonexistent.json')
+        self.assertIsInstance(service, str)
+        self.assertIn('Error: Credentials file not found', service)
