@@ -1,5 +1,5 @@
 from typing import Optional
-from . import email_handler
+from bmail import email_handler
 
 
 def send_email(cred_filepath: str, to: str, cc: str, bcc: str, subject: str,

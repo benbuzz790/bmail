@@ -2,7 +2,7 @@
 bmail - A simple Gmail client library designed for LLM integration
 """
 
-from .llm_email_tools import (
+from bmail.llm_email_tools import (
     send_email,
     reply_to_email,
     check_inbox,
@@ -11,7 +11,7 @@ from .llm_email_tools import (
 )
 
 __version__ = "0.1.0"
-__author__ = "Ben Buzzell"
+__author__ = "Ben Rinauto"
 __email__ = "benbuzz790@gmail.com"
 
 __all__ = [
