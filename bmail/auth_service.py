@@ -33,12 +33,11 @@ def get_gmail_service(service_account_path: str) ->Union[Resource, str]:
     """
     try:
         SCOPES = ['https://www.googleapis.com/auth/gmail.modify',
-            'https://www.googleapis.com/auth/gmail.compose',
-            'https://www.googleapis.com/auth/gmail.send']
-        credentials = service_account.Credentials.from_service_account_file(
-            service_account_path, scopes=SCOPES)
-        delegated_credentials = credentials.with_subject('benbuzz790@gmail.com'
-            )
+                  'https://www.googleapis.com/auth/gmail.compose',
+                  'https://www.googleapis.com/auth/gmail.send'
+                  ]
+        credentials = service_account.Credentials.from_service_account_file(service_account_path, scopes=SCOPES)
+        delegated_credentials = credentials.with_subject('ben.rinauto@brwspace.com')
         service = build('gmail', 'v1', credentials=delegated_credentials)
         return service
     except Exception as e:

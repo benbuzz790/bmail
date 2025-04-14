@@ -5,47 +5,34 @@ from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.discovery import Resource
+from google.oauth2 import service_account
+from googleapiclient.discovery import build, Resource
 
-
-def get_gmail_service(credentials_path: str) ->Union[Resource, str]:
-    """Get an authenticated Gmail API service object.
+def get_gmail_service(credentials_path: str) -> Union[Resource, str]:
+    """Get an authenticated Gmail API service object using service account credentials.
 
     Args:
-        credentials_path (str): Path to the credentials.json file
+        credentials_path (str): Path to the service account JSON key file
 
     Returns:
         Union[Resource, str]: Either an authenticated Gmail service object or an error message
 
     Note:
-        This function is stateless and creates a new service object each time.
-        It follows the exact authentication pattern from example.py.
+        This function expects a properly configured service account with:
+        1. Domain-wide delegation enabled
+        2. Required Gmail API scopes authorized in Google Workspace
     """
     if not os.path.exists(credentials_path):
         return f'Error: Credentials file not found at {credentials_path}'
     try:
-        SCOPES = ['https://www.googleapis.com/auth/gmail.modify',
-            'https://www.googleapis.com/auth/gmail.compose',
-            'https://www.googleapis.com/auth/gmail.send']
-        creds = None
-        if os.path.exists('token.pickle'):
-            try:
-                with open('token.pickle', 'rb') as token:
-                    creds = pickle.load(token)
-            except (EOFError, pickle.UnpicklingError):
-                os.remove('token.pickle')
-                creds = None
-        if not creds or not creds.valid:
-            if creds and creds.expired and creds.refresh_token:
-                creds.refresh(Request())
-            else:
-                flow = InstalledAppFlow.from_client_secrets_file(
-                    credentials_path, SCOPES)
-                creds = flow.run_local_server(port=0)
-            import stat
-            with open('token.pickle', 'wb') as token:
-                pickle.dump(creds, token)
-            os.chmod('token.pickle', stat.S_IRUSR | stat.S_IWUSR)
-        service = build('gmail', 'v1', credentials=creds)
-        return service
+        SCOPES = ['https://www.googleapis.com/auth/gmail.modify', 'https://www.googleapis.com/auth/gmail.compose', 'https://www.googleapis.com/auth/gmail.send']
+        credentials = service_account.Credentials.from_service_account_file(credentials_path, scopes=SCOPES)
+        delegated_credentials = credentials.with_subject('ben.rinauto@brwspace.com')
+        service = build('gmail', 'v1', credentials=delegated_credentials)
+        try:
+            service.users().getProfile(userId='me').execute()
+            return service
+        except Exception as e:
+            return f'Error verifying service: {str(e)}'
     except Exception as e:
         return f'Error during authentication: {str(e)}'

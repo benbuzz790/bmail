@@ -95,7 +95,7 @@ def list_emails(service: Resource, query: str=None, max_results: int=20) ->str:
                     subject = header['value']
                 elif header['name'].lower() == 'from':
                     sender = header['value']
-            email_list.append(f'{sender}: {subject}')
+            email_list.append(f'{msg["id"]}: {subject}')
         return '\n'.join(email_list)
     except Exception as e:
         return f'Failed to list emails: {str(e)}'
