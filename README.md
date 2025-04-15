@@ -34,9 +34,8 @@ pip install git+https://github.com/benbuzz790/bmail.git
 Dependencies:
 - google-auth-httplib2
 - google-api-python-client
+- google-auth
 - email-validator
-
-Note: google-auth-oauthlib is no longer required as we use service account authentication.
 
 ## Setup
 
@@ -50,19 +49,16 @@ This library uses a service account for authentication. Follow the detailed inst
 
 ### 2. Configuration
 
-Configure the library using environment variables:
+The following environment variables are required:
 
 ```bash
-# Required configuration:
+# Required environment variables:
 export BMAIL_CREDENTIALS_PATH="/path/to/your/credentials.json"  # Path to service account key file
 export BMAIL_TEST_EMAIL="your.test@email.com"                  # Email used for testing
-export BMAIL_SENDER="your.bot@email.com"                       # Default sender email for the bot
+export BMAIL_SENDER="your.bot@email.com"                       # Email address used as the sender
 ```
 
-If not set, the library defaults to:
-- BMAIL_CREDENTIALS_PATH: Looking for "__credentials.json" in project root
-- BMAIL_TEST_EMAIL: "ben.rinauto@brwspace.com"
-- BMAIL_SENDER: "claude.bot@brwspace.com"
+These must be set before using the library. There are no default values.
 
 3. Verify setup by running the test suite:
    ```bash
@@ -73,8 +69,12 @@ If not set, the library defaults to:
 
 ### Send an Email
 ```python
-response = client.send_email(
+from bmail import send_email
+
+response = send_email(
     to="recipient@example.com",
+    cc="",
+    bcc="",
     subject="TEST EMAIL",
     body="Hello from LLM Email System!"
 )
@@ -83,7 +83,9 @@ print(response)  # "Email sent successfully"
 
 ### Check Inbox
 ```python
-emails = client.check_inbox()
+from bmail import check_inbox
+
+emails = check_inbox()  # Uses BMAIL_CREDENTIALS_PATH
 print(emails)
 # Returns: List of email IDs and subjects
 # ["1234:Test Subject", "5678:Another Email"]
@@ -91,36 +93,47 @@ print(emails)
 
 ### Read Email
 ```python
-email_content = client.read_email("1234")
+from bmail import read_email
+
+email_content = read_email("1234")  # Uses BMAIL_CREDENTIALS_PATH
 print(email_content)
 # Returns: "From: sender@example.com\nSubject: Test Subject\n\nEmail body here"
 ```
 
 ### Reply to Email
 ```python
-response = client.reply_to_email(
+from bmail import reply_to_email
+import os
+
+response = reply_to_email(
     email_id="1234",
-    reply_text="Thank you for your message"
+    body="Thank you for your message",
+    sender=os.environ['BMAIL_SENDER']
 )
 print(response)  # "Reply sent successfully"
 ```
 
 ### Archive Emails
 ```python
-response = client.archive_emails(["1234", "5678"])
-print(response)  # "Emails archived successfully"
+from bmail import archive_emails
+
+response = archive_emails("1234")  # Uses BMAIL_CREDENTIALS_PATH
+print(response)  # "Email archived successfully"
 ```
 
 ## API Reference
 
 ### send_email
 ```python
-def send_email(to: str, subject: str, body: str) -> str
+def send_email(to: str, cc: str, bcc: str, subject: str, body: str, cred_filepath: Optional[str] = None) -> str
 ```
 - Parameters:
   - to: Recipient email address
+  - cc: CC recipients (comma-separated)
+  - bcc: BCC recipients (comma-separated)
   - subject: Email subject line
   - body: Plain text email body
+  - cred_filepath: Optional path to credentials file (uses BMAIL_CREDENTIALS_PATH if not provided)
 - Returns: Success message or error description
 - Common Errors:
   - "Invalid email address"
@@ -128,9 +141,11 @@ def send_email(to: str, subject: str, body: str) -> str
 
 ### check_inbox
 ```python
-def check_inbox() -> list[str]
+def check_inbox(query: str = None, cred_filepath: Optional[str] = None) -> str
 ```
-- Parameters: None
+- Parameters:
+  - query: Optional Gmail search query
+  - cred_filepath: Optional path to credentials file (uses BMAIL_CREDENTIALS_PATH if not provided)
 - Returns: List of "id:subject" strings
 - Common Errors:
   - "Failed to fetch inbox"
@@ -138,10 +153,11 @@ def check_inbox() -> list[str]
 
 ### read_email
 ```python
-def read_email(email_id: str) -> str
+def read_email(email_id: str, cred_filepath: Optional[str] = None) -> str
 ```
 - Parameters:
   - email_id: ID from check_inbox
+  - cred_filepath: Optional path to credentials file (uses BMAIL_CREDENTIALS_PATH if not provided)
 - Returns: Formatted email content as string
 - Common Errors:
   - "Email not found"
@@ -149,11 +165,13 @@ def read_email(email_id: str) -> str
 
 ### reply_to_email
 ```python
-def reply_to_email(email_id: str, reply_text: str) -> str
+def reply_to_email(email_id: str, body: str, sender: str, cred_filepath: Optional[str] = None) -> str
 ```
 - Parameters:
   - email_id: ID from check_inbox
-  - reply_text: Plain text reply body
+  - body: Plain text reply body
+  - sender: Email address to send from (typically BMAIL_SENDER)
+  - cred_filepath: Optional path to credentials file (uses BMAIL_CREDENTIALS_PATH if not provided)
 - Returns: Success message or error description
 - Common Errors:
   - "Email not found"
@@ -161,10 +179,11 @@ def reply_to_email(email_id: str, reply_text: str) -> str
 
 ### archive_emails
 ```python
-def archive_emails(email_ids: list[str]) -> str
+def archive_emails(email_id: str, cred_filepath: Optional[str] = None) -> str
 ```
 - Parameters:
-  - email_ids: List of IDs to archive
+  - email_id: ID of email to archive
+  - cred_filepath: Optional path to credentials file (uses BMAIL_CREDENTIALS_PATH if not provided)
 - Returns: Success message or error description
 - Common Errors:
   - "Invalid email ID"
@@ -177,7 +196,6 @@ bmail/
   ├── __init__.py
   ├── auth.py              - Service account authentication
   ├── auth_service.py      - Gmail service setup
-  ├── config.py            - Configuration (gitignored)
   ├── email_handler.py     - Core email operations
   ├── gmail_client.py      - Gmail API interface
   └── llm_email_tools.py   - LLM-friendly interface
