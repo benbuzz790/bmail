@@ -1,6 +1,8 @@
+import os
 from typing import Optional
 from bmail import email_handler
-def send_email(cred_filepath: str, to: str, cc: str, bcc: str, subject: str, body: str) -> str:
+
+def send_email(to: str, cc: str, bcc: str, subject: str, body: str, cred_filepath: Optional[str] = None) -> str:
     """Send an email using Gmail API.
     
     Args:
@@ -18,9 +20,10 @@ def send_email(cred_filepath: str, to: str, cc: str, bcc: str, subject: str, bod
         >>> send_email("credentials.json", "user@example.com", "", "", "Hello", "Test message")
         "Email sent successfully"
     """
-    return email_handler.send_email(cred_filepath, to, cc, bcc, subject, body)
+    creds = cred_filepath or os.environ['BMAIL_CREDENTIALS_PATH']
+    return email_handler.send_email(creds, to, cc, bcc, subject, body)
 
-def reply_to_email(cred_filepath: str, email_id: str, body: str, sender: str) -> str:
+def reply_to_email(email_id: str, body: str, sender: str, cred_filepath: Optional[str] = None) -> str:
     """Reply to a specific email using Gmail API.
 
     Args:
@@ -36,12 +39,13 @@ def reply_to_email(cred_filepath: str, email_id: str, body: str, sender: str) ->
         >>> reply_to_email("credentials.json", "12345", "Thanks for your email", "user@example.com")
         "Reply sent successfully"
     """
-    receive_result = email_handler.receive_email(cred_filepath, email_id)
+    creds = cred_filepath or os.environ['BMAIL_CREDENTIALS_PATH']
+    receive_result = email_handler.receive_email(creds, email_id)
     if receive_result.startswith('Error'):
         return receive_result
-    return email_handler.send_email(cred_filepath, sender, '', '', 'Re: TEST EMAIL', body)
+    return email_handler.send_email(creds, sender, '', '', 'Re: TEST EMAIL', body)
 
-def check_inbox(cred_filepath: str, query: str=None) -> str:
+def check_inbox(query: str=None, cred_filepath: Optional[str] = None) -> str:
     """List inbox contents using Gmail API.
 
     Args:
@@ -58,9 +62,10 @@ user2@example.com: Meeting"
         >>> check_inbox("credentials.json", query='subject:"TEST EMAIL"')
         "test@example.com: TEST EMAIL"
     """
-    return email_handler.list_emails(cred_filepath, query=query)
+    creds = cred_filepath or os.environ['BMAIL_CREDENTIALS_PATH']
+    return email_handler.list_emails(creds, query=query)
 
-def read_email(cred_filepath: str, email_id: str) -> str:
+def read_email(email_id: str, cred_filepath: Optional[str] = None) -> str:
     """Retrieve content of a specific email using Gmail API.
     
     Args:
@@ -76,9 +81,10 @@ def read_email(cred_filepath: str, email_id: str) -> str:
         Subject: Hello
         Body: Test message"
     """
-    return email_handler.receive_email(cred_filepath, email_id)
+    creds = cred_filepath or os.environ['BMAIL_CREDENTIALS_PATH']
+    return email_handler.receive_email(creds, email_id)
 
-def archive_emails(cred_filepath: str, email_id: str) -> str:
+def archive_emails(email_id: str, cred_filepath: Optional[str] = None) -> str:
     """Archive a specific email using Gmail API.
     
     Args:
@@ -92,4 +98,5 @@ def archive_emails(cred_filepath: str, email_id: str) -> str:
         >>> archive_emails("credentials.json", "12345")
         "Email archived successfully"
     """
-    return email_handler.archive_email(cred_filepath, email_id)
+    creds = cred_filepath or os.environ['BMAIL_CREDENTIALS_PATH']
+    return email_handler.archive_email(creds, email_id)
