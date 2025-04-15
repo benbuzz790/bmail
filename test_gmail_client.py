@@ -4,7 +4,7 @@ import time
 from googleapiclient.discovery import Resource
 from bmail import gmail_client
 from bmail.auth import get_gmail_service
-
+from bmail.config import Config
 SCOPES = ['https://www.googleapis.com/auth/gmail.modify', 'https://www.googleapis.com/auth/gmail.send']
 
 class TestGmailClient(unittest.TestCase):
@@ -13,14 +13,14 @@ class TestGmailClient(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Set up Gmail service for all tests."""
-        cls.creds_path = '__credentials.json'
+        cls.creds_path = Config.CREDENTIALS_PATH
         if not os.path.exists(cls.creds_path):
-            raise unittest.SkipTest('__credentials.json not found - skipping tests')
-        service = get_gmail_service(cls.creds_path)
+            raise unittest.SkipTest(f'{cls.creds_path} not found - skipping tests')
+        service = get_gmail_service(cls.creds_path, Config.TEST_EMAIL)
         if isinstance(service, str):
             raise unittest.SkipTest(f'Failed to get Gmail service: {service}')
         cls.service = service
-        cls.test_email = 'ben.rinauto@brwspace.com'
+        cls.test_email = Config.TEST_EMAIL
         cls.test_subject = 'TEST EMAIL'
         cls.test_body = 'This is a test email from the Gmail client integration tests.'
 
@@ -48,8 +48,7 @@ class TestGmailClient(unittest.TestCase):
         print('\nSearch result:')
         print(result)
         self.assertTrue(self.test_subject in result, f"Test subject '{self.test_subject}' not found in result")
-        # Only check for subject since we're using message ID format now
-        self.assertTrue(self.test_subject in result, "Test subject not found in search results")
+        self.assertTrue(self.test_subject in result, 'Test subject not found in search results')
 
     def test_3_get_email(self):
         """Test retrieving a specific email."""

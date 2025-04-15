@@ -1,14 +1,16 @@
 from bmail.llm_email_tools import send_email, check_inbox, read_email, archive_emails
+from bmail.config import Config
 import time
 
 def main():
-    # Set credential file path
-    cred_filepath = "__credentials.json"  # Service account key file
-    
+    # Credentials path can be set via BMAIL_CREDENTIALS_PATH environment variable
+    # Defaults to "__credentials.json" in project root
+    cred_filepath = Config.CREDENTIALS_PATH
+
     print("\n1. Sending test email...")
     result = send_email(
         cred_filepath=cred_filepath,
-        to="claude.bot@brwspace.com", # replace with email from your credentials
+        to=Config.TEST_EMAIL,  # Can be set via BMAIL_TEST_EMAIL environment variable
         cc="",
         bcc="",
         subject="TEST EMAIL",

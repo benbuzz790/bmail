@@ -71,15 +71,31 @@ Before beginning, ensure you have the following:
 
 ### 4. Configure Application
 
-1. Place your service account key file as `__credentials.json` in your project root
-2. Update email address in auth.py:
-   ```python
-   delegated_credentials = credentials.with_subject('your-user@your-domain.com')
+1. Download your service account key file (from step 2)
+
+2. Set up environment variables:
+   ```bash
+   # Path to your downloaded service account key file
+   export BMAIL_CREDENTIALS_PATH="/path/to/your/credentials.json"
+   
+   # Email that will receive test emails during testing
+   export BMAIL_TEST_EMAIL="your.test@your-domain.com"
+   
+   # Email address the bot will use to send emails
+   export BMAIL_SENDER="your.bot@your-domain.com"
    ```
+
+   Note: If not set, the library defaults to:
+   - Looking for "__credentials.json" in project root
+   - Using "ben.rinauto@brwspace.com" for test email
+   - Using "claude.bot@brwspace.com" for sender
+
 3. Verify setup by running the test suite:
    ```bash
    pytest test_auth.py -v
    ```
+
+Note: For production deployments, always set these environment variables explicitly rather than relying on defaults.
 
 ## Troubleshooting
 

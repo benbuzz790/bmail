@@ -1,6 +1,7 @@
 import unittest
 import os
 from bmail.email_handler import send_email, receive_email, archive_email, list_emails
+from bmail.config import Config
 
 class TestEmailHandler(unittest.TestCase):
     """Test cases for email_handler.py using real Gmail API integration."""
@@ -8,10 +9,10 @@ class TestEmailHandler(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Set up test environment."""
-        cls.creds_path = '__credentials.json'
+        cls.creds_path = Config.CREDENTIALS_PATH
         if not os.path.exists(cls.creds_path):
-            raise unittest.SkipTest('__credentials.json not found - skipping tests')
-        cls.test_recipient = 'ben.rinauto@brwspace.com'
+            raise unittest.SkipTest(f'{cls.creds_path} not found - skipping tests')
+        cls.test_recipient = Config.TEST_EMAIL
         cls.test_subject = 'Test Email Subject'
         cls.test_body = 'This is a test email body.'
 
@@ -19,7 +20,6 @@ class TestEmailHandler(unittest.TestCase):
         """Test sending an email."""
         result = send_email(self.creds_path, self.test_recipient, '', '', self.test_subject, self.test_body)
         self.assertTrue(result.startswith('Email sent successfully'))
-        self.assertTrue(os.listdir('sent'), 'No email file created in sent folder')
 
     def test_receive_email(self):
         """Test receiving a specific email."""

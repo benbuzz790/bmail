@@ -1,9 +1,8 @@
 from typing import Optional
 from bmail import email_handler
+from .config import Config
 
-
-def send_email(cred_filepath: str, to: str, cc: str, bcc: str, subject: str,
-    body: str) ->str:
+def send_email(cred_filepath: str, to: str, cc: str, bcc: str, subject: str, body: str) -> str:
     """Send an email using Gmail API.
     
     Args:
@@ -23,18 +22,17 @@ def send_email(cred_filepath: str, to: str, cc: str, bcc: str, subject: str,
     """
     return email_handler.send_email(cred_filepath, to, cc, bcc, subject, body)
 
-
-def reply_to_email(cred_filepath: str, email_id: str, body: str) ->str:
+def reply_to_email(cred_filepath: str, email_id: str, body: str) -> str:
     """Reply to a specific email using Gmail API.
-    
+
     Args:
         cred_filepath: Path to credentials.json file
         email_id: Unique identifier of the email to reply to
         body: Reply message body
-        
+
     Returns:
         str: Success/error message
-    
+
     Example:
         >>> reply_to_email("credentials.json", "12345", "Thanks for your email")
         "Reply sent successfully"
@@ -42,11 +40,9 @@ def reply_to_email(cred_filepath: str, email_id: str, body: str) ->str:
     receive_result = email_handler.receive_email(cred_filepath, email_id)
     if receive_result.startswith('Error'):
         return receive_result
-    return email_handler.send_email(cred_filepath, 'benbuzz790@gmail.com',
-        '', '', 'Re: TEST EMAIL', body)
+    return email_handler.send_email(cred_filepath, Config.DEFAULT_SENDER, '', '', 'Re: TEST EMAIL', body)
 
-
-def check_inbox(cred_filepath: str, query: str=None) ->str:
+def check_inbox(cred_filepath: str, query: str=None) -> str:
     """List inbox contents using Gmail API.
 
     Args:
@@ -65,8 +61,7 @@ user2@example.com: Meeting"
     """
     return email_handler.list_emails(cred_filepath, query=query)
 
-
-def read_email(cred_filepath: str, email_id: str) ->str:
+def read_email(cred_filepath: str, email_id: str) -> str:
     """Retrieve content of a specific email using Gmail API.
     
     Args:
@@ -79,13 +74,12 @@ def read_email(cred_filepath: str, email_id: str) ->str:
     Example:
         >>> read_email("credentials.json", "12345")
         "From: user@example.com
-Subject: Hello
-Body: Test message"
+        Subject: Hello
+        Body: Test message"
     """
     return email_handler.receive_email(cred_filepath, email_id)
 
-
-def archive_emails(cred_filepath: str, email_id: str) ->str:
+def archive_emails(cred_filepath: str, email_id: str) -> str:
     """Archive a specific email using Gmail API.
     
     Args:

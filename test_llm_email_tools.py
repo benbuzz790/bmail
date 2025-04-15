@@ -1,9 +1,8 @@
 import unittest
 import os
-from bmail import llm_email_tools
 import time
 from bmail import llm_email_tools
-import time
+from bmail.config import Config
 
 class TestLLMEmailTools(unittest.TestCase):
     """Test LLM email tools interface."""
@@ -11,10 +10,10 @@ class TestLLMEmailTools(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Set up test parameters."""
-        cls.cred_filepath = '__credentials.json'
+        cls.cred_filepath = Config.CREDENTIALS_PATH
         if not os.path.exists(cls.cred_filepath):
-            raise unittest.SkipTest('__credentials.json not found - skipping tests')
-        cls.test_email = 'ben.rinauto@brwspace.com'
+            raise unittest.SkipTest(f'{cls.cred_filepath} not found - skipping tests')
+        cls.test_email = Config.TEST_EMAIL
         cls.test_subject = 'TEST EMAIL'
         cls.test_body = 'This is a test email.'
         cls.email_id = None
@@ -34,8 +33,7 @@ class TestLLMEmailTools(unittest.TestCase):
         result = llm_email_tools.check_inbox(self.cred_filepath, query=f'subject:"{self.test_subject}"')
         self.assertIsInstance(result, str)
         self.assertTrue(self.test_subject in result)
-        # Only check for subject since we're using message ID format now
-        self.assertTrue(self.test_subject in result, "Test subject not found in search results")
+        self.assertTrue(self.test_subject in result, 'Test subject not found in search results')
 
     def test_3_read_and_reply(self):
         """Test reading and replying to the test email."""

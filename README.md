@@ -32,32 +32,41 @@ pip install git+https://github.com/benbuzz790/bmail.git
 ```
 
 Dependencies:
-- google-auth-oauthlib
 - google-auth-httplib2
 - google-api-python-client
 - email-validator
 
+Note: google-auth-oauthlib is no longer required as we use service account authentication.
+
 ## Setup
 
-1. Create a Google Cloud Project
-   - Go to [Google Cloud Console](https://console.cloud.google.com)
-   - Create a new project
-   - Enable the Gmail API
+### 1. Service Account Setup
 
-2. Get Credentials
-   - Go to APIs & Services > Credentials
-   - Create OAuth 2.0 Client ID
-   - Download as credentials.json
-   - Place in project root directory
+This library uses a service account for authentication. Follow the detailed instructions in [service-setup-instructions.md](service-setup-instructions.md) to:
+- Create a Google Cloud Project
+- Set up a service account
+- Enable domain-wide delegation
+- Configure necessary permissions
 
-3. Configure Authentication
-   ```python
-   # Follow example.py pattern:
-   from email_client import EmailClient
-   
-   client = EmailClient()
-   # First run will open browser for authentication
-   # Tokens are saved locally for future use
+### 2. Configuration
+
+Configure the library using environment variables:
+
+```bash
+# Required configuration:
+export BMAIL_CREDENTIALS_PATH="/path/to/your/credentials.json"  # Path to service account key file
+export BMAIL_TEST_EMAIL="your.test@email.com"                  # Email used for testing
+export BMAIL_SENDER="your.bot@email.com"                       # Default sender email for the bot
+```
+
+If not set, the library defaults to:
+- BMAIL_CREDENTIALS_PATH: Looking for "__credentials.json" in project root
+- BMAIL_TEST_EMAIL: "ben.rinauto@brwspace.com"
+- BMAIL_SENDER: "claude.bot@brwspace.com"
+
+3. Verify setup by running the test suite:
+   ```bash
+   pytest test_auth.py -v
    ```
 
 ## Usage Examples
@@ -163,12 +172,27 @@ def archive_emails(email_ids: list[str]) -> str
 
 ## File Structure
 
-Simple, flat directory structure:
-- `email_client.py` - Main client implementation
-- `example.py` - Authentication example
-- `credentials.json` - OAuth credentials
-- `requirements.txt` - Dependencies
-- `README.md` - This documentation
+```
+bmail/
+  ├── __init__.py
+  ├── auth.py              - Service account authentication
+  ├── auth_service.py      - Gmail service setup
+  ├── config.py            - Configuration (gitignored)
+  ├── email_handler.py     - Core email operations
+  ├── gmail_client.py      - Gmail API interface
+  └── llm_email_tools.py   - LLM-friendly interface
+
+tests/
+  ├── test_auth.py
+  ├── test_email_handler.py
+  ├── test_gmail_client.py
+  └── test_llm_email_tools.py
+
+__credentials.json         - Service account key (gitignored)
+README.md                  - This documentation
+service-setup-instructions.md - Detailed setup guide
+setup.py                   - Package configuration
+```
 
 ## Limitations
 
@@ -187,20 +211,30 @@ These limitations maintain simplicity and reliability.
 ## Troubleshooting
 
 Common Issues:
+
 1. Authentication Errors
-   - Ensure credentials.json is in root directory
-   - Follow example.py pattern exactly
-   - Check Google Cloud Console settings
+   - Verify service account key file exists at BMAIL_CREDENTIALS_PATH
+   - Check service account has domain-wide delegation enabled
+   - Verify all required scopes are authorized in Google Workspace
+   - Check Google Cloud Console API is enabled
 
 2. Rate Limits
    - Gmail API has usage quotas
    - Space out requests appropriately
 
 3. Permission Issues
-   - Ensure OAuth scope includes send/modify permissions
-   - Re-authenticate if permissions change
+   - Ensure service account has proper domain-wide delegation
+   - Verify all required scopes are authorized:
+     * https://www.googleapis.com/auth/gmail.modify
+     * https://www.googleapis.com/auth/gmail.compose
+     * https://www.googleapis.com/auth/gmail.send
 
 4. Email Format
    - Use plain text only
    - Verify email addresses are valid
    - Keep subject lines reasonable length
+
+5. Configuration Issues
+   - Check environment variables are set correctly
+   - Verify sender email has proper permissions
+   - Ensure test email is in your workspace domain

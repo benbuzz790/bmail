@@ -1,10 +1,11 @@
 from setuptools import setup, find_packages
+from bmail.config import Config
 
 setup(
     name="bmail",
     version="0.1.0",
     author="Ben Rinauto",
-    author_email="benbuzz790@gmail.com",
+    author_email=Config.DEFAULT_SENDER,
     description="A simple Gmail client library designed for LLM integration",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",

@@ -1,4 +1,6 @@
 # Existing project-specific ignores
+bmail/config.py
+config.py
 *.pickle
 *.bot
 *.json
