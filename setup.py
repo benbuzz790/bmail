@@ -1,11 +1,10 @@
 from setuptools import setup, find_packages
-from bmail.config import Config
 
 setup(
     name="bmail",
     version="0.1.0",
     author="Ben Rinauto",
-    author_email=Config.DEFAULT_SENDER,
+    author_email="ben.rinauto@gmail.com",  # Hardcoded instead of importing from config
     description="A simple Gmail client library designed for LLM integration",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
@@ -21,6 +20,7 @@ setup(
         "google-api-python-client",
         "google-auth-httplib2",
         "google-auth-oauthlib",
+        "google-auth",  # Added this as it's required by auth.py
     ],
     test_suite="tests",
 )
