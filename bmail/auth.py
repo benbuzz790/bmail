@@ -8,7 +8,7 @@ from googleapiclient.discovery import Resource
 from google.oauth2 import service_account
 from googleapiclient.discovery import build, Resource
 
-def get_gmail_service(credentials_path: str, delegated_email: str=None) -> Union[Resource, str]:
+def get_gmail_service(credentials_path: str, delegated_email: str) -> Union[Resource, str]:
     """Get an authenticated Gmail API service object using service account credentials.
 
     Args:
@@ -25,9 +25,6 @@ def get_gmail_service(credentials_path: str, delegated_email: str=None) -> Union
     """
     if not os.path.exists(credentials_path):
         return f'Error: Credentials file not found at {credentials_path}'
-    if delegated_email is None:
-        from .config import Config
-        delegated_email = Config.TEST_EMAIL
     try:
         SCOPES = ['https://www.googleapis.com/auth/gmail.modify', 'https://www.googleapis.com/auth/gmail.compose', 'https://www.googleapis.com/auth/gmail.send']
         credentials = service_account.Credentials.from_service_account_file(credentials_path, scopes=SCOPES)

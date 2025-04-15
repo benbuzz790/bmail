@@ -1,7 +1,5 @@
 from typing import Optional
 from bmail import email_handler
-from .config import Config
-
 def send_email(cred_filepath: str, to: str, cc: str, bcc: str, subject: str, body: str) -> str:
     """Send an email using Gmail API.
     
@@ -22,25 +20,26 @@ def send_email(cred_filepath: str, to: str, cc: str, bcc: str, subject: str, bod
     """
     return email_handler.send_email(cred_filepath, to, cc, bcc, subject, body)
 
-def reply_to_email(cred_filepath: str, email_id: str, body: str) -> str:
+def reply_to_email(cred_filepath: str, email_id: str, body: str, sender: str) -> str:
     """Reply to a specific email using Gmail API.
 
     Args:
         cred_filepath: Path to credentials.json file
         email_id: Unique identifier of the email to reply to
         body: Reply message body
+        sender: Email address to send from
 
     Returns:
         str: Success/error message
 
     Example:
-        >>> reply_to_email("credentials.json", "12345", "Thanks for your email")
+        >>> reply_to_email("credentials.json", "12345", "Thanks for your email", "user@example.com")
         "Reply sent successfully"
     """
     receive_result = email_handler.receive_email(cred_filepath, email_id)
     if receive_result.startswith('Error'):
         return receive_result
-    return email_handler.send_email(cred_filepath, Config.DEFAULT_SENDER, '', '', 'Re: TEST EMAIL', body)
+    return email_handler.send_email(cred_filepath, sender, '', '', 'Re: TEST EMAIL', body)
 
 def check_inbox(cred_filepath: str, query: str=None) -> str:
     """List inbox contents using Gmail API.
