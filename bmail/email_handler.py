@@ -7,6 +7,14 @@ import base64
 from bmail.auth import get_gmail_service
 from bmail import gmail_client
 
+def _get_service(creds_path: str) -> Union[str, object]:
+    """Get Gmail service using credentials and delegated email from environment."""
+    try:
+        delegated_email = os.environ['BMAIL_TEST_EMAIL']
+        return get_gmail_service(creds_path, delegated_email)
+    except KeyError:
+        return "Error: BMAIL_TEST_EMAIL environment variable not set"
+
 def send_email(creds_path: str, to_addr: str, cc: str, bcc: str, subject: str, body: str) -> str:
     """Send an email using Gmail API.
 
@@ -21,7 +29,7 @@ def send_email(creds_path: str, to_addr: str, cc: str, bcc: str, subject: str, b
     Returns:
         str: Success message or error description
     """
-    service = get_gmail_service(creds_path)
+    service = _get_service(creds_path)
     if isinstance(service, str):
         return f'Authentication error: {service}'
     return gmail_client.send_gmail(service, to_addr, cc, bcc, subject, body)
@@ -36,7 +44,7 @@ def receive_email(creds_path: str, email_id: str) -> str:
     Returns:
         str: Formatted email content or error description
     """
-    service = get_gmail_service(creds_path)
+    service = _get_service(creds_path)
     if isinstance(service, str):
         return f'Authentication error: {service}'
     result = gmail_client.get_email(service, email_id)
@@ -70,7 +78,7 @@ def archive_email(creds_path: str, email_id: str) -> str:
         str: Success message or error description
     """
     gmail_id = email_id.replace('.eml', '') if email_id.endswith('.eml') else email_id
-    service = get_gmail_service(creds_path)
+    service = _get_service(creds_path)
     if isinstance(service, str):
         return f'Authentication error: {service}'
     return gmail_client.archive_email(service, gmail_id)
@@ -85,7 +93,7 @@ def list_emails(creds_path: str, query: str=None) -> str:
     Returns:
         str: Newline-separated list of "sender: subject" or error message
     """
-    service = get_gmail_service(creds_path)
+    service = _get_service(creds_path)
     if isinstance(service, str):
         return f'Authentication error: {service}'
     return gmail_client.list_emails(service, query=query)
