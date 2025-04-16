@@ -65,7 +65,7 @@ def get_email(service: Resource, email_id: str) ->Union[bytes, str]:
 
 def list_emails(service: Resource, query: str=None, max_results: int=20) ->str:
     """
-    List available emails in format "sender: subject".
+    List available emails in inbox in format "id: subject".
 
     Args:
         service: Authenticated Gmail API service object
@@ -73,12 +73,19 @@ def list_emails(service: Resource, query: str=None, max_results: int=20) ->str:
         max_results: Maximum number of emails to list (default 20)
 
     Returns:
-        str: Newline-separated list of "sender: subject" or error message
+        str: Newline-separated list of "id: subject" or error message
     """
     try:
-        params = {'userId': 'me', 'maxResults': max_results}
+        # Always include inbox label in query
+        search_query = 'in:inbox'
         if query:
-            params['q'] = query
+            search_query = f'{search_query} {query}'
+            
+        params = {
+            'userId': 'me',
+            'maxResults': max_results,
+            'q': search_query
+        }
         results = service.users().messages().list(**params).execute()
         messages = results.get('messages', [])
         if not messages:
@@ -104,17 +111,34 @@ def list_emails(service: Resource, query: str=None, max_results: int=20) ->str:
 def archive_email(service: Resource, email_id: str) ->str:
     """
     Archive/delete an email.
-    
+
     Args:
         service: Authenticated Gmail API service object
         email_id: ID of the email to archive
-    
+
     Returns:
         str: Success message or error description
     """
     try:
-        service.users().messages().modify(userId='me', id=email_id, body={
-            'removeLabelIds': ['INBOX']}).execute()
+        # First verify the message exists and get its current labels
+        message = service.users().messages().get(userId='me', id=email_id).execute()
+        current_labels = message.get('labelIds', [])
+        
+        if 'INBOX' not in current_labels:
+            return f'Email {email_id} is not in inbox'
+        
+        # Remove INBOX label
+        result = service.users().messages().modify(
+            userId='me',
+            id=email_id,
+            body={'removeLabelIds': ['INBOX']}
+        ).execute()
+        
+        # Verify label was removed
+        updated_labels = result.get('labelIds', [])
+        if 'INBOX' in updated_labels:
+            return f'Failed to remove INBOX label from email {email_id}'
+            
         return f'Email {email_id} archived successfully'
     except Exception as e:
-        return f'Failed to archive email: {str(e)}'
+        return f'Failed to archive email {email_id}: {str(e)}'

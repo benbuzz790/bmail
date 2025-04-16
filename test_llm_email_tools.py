@@ -47,9 +47,22 @@ class TestLLMEmailTools(unittest.TestCase):
         self.assertTrue('successfully' in result.lower())
 
     def test_4_archive(self):
-        """Test archiving the test email."""
+        """Test archiving the test email and verify it's removed from inbox."""
         self.assertIsNotNone(self.email_id, 'No test email ID available')
+        
+        # First verify email exists in inbox
+        pre_archive = llm_email_tools.check_inbox(query=f'subject:"{self.test_subject}"', cred_filepath=self.cred_filepath)
+        self.assertTrue(self.test_subject in pre_archive, 'Test email not found in inbox before archiving')
+        
+        # Archive the email
         result = llm_email_tools.archive_emails(self.email_id, self.cred_filepath)
         self.assertTrue('successfully' in result.lower())
+        
+        # Allow time for Gmail API to process the archive operation
+        time.sleep(5)
+        
+        # Verify email no longer appears in inbox
+        post_archive = llm_email_tools.check_inbox(query=f'subject:"{self.test_subject}"', cred_filepath=self.cred_filepath)
+        self.assertNotIn(self.test_subject, post_archive, 'Test email still found in inbox after archiving')
 if __name__ == '__main__':
     unittest.main()
