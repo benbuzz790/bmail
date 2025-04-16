@@ -6,12 +6,12 @@ def send_email(to: str, cc: str, bcc: str, subject: str, body: str, cred_filepat
     """Send an email using Gmail API.
     
     Args:
-        cred_filepath: Path to credentials.json file
         to: Recipient email address
         cc: Comma-separated CC addresses (can be empty)
         bcc: Comma-separated BCC addresses (can be empty)
         subject: Email subject line
         body: Email body text
+        cred_filepath: Path to credentials.json file (optional - uses env vars by default)
         
     Returns:
         str: Success/error message
@@ -27,10 +27,10 @@ def reply_to_email(email_id: str, body: str, sender: str, cred_filepath: Optiona
     """Reply to a specific email using Gmail API.
 
     Args:
-        cred_filepath: Path to credentials.json file
         email_id: Unique identifier of the email to reply to
         body: Reply message body
         sender: Email address to send from
+        cred_filepath: Path to credentials.json file (optional - uses env vars by default)
 
     Returns:
         str: Success/error message
@@ -49,8 +49,8 @@ def check_inbox(query: str=None, cred_filepath: Optional[str] = None) -> str:
     """List inbox contents using Gmail API.
 
     Args:
-        cred_filepath: Path to credentials.json file
         query: Optional Gmail search query (e.g. 'subject:"TEST EMAIL"')
+        cred_filepath: Path to credentials.json file (optional - uses env vars by default)
 
     Returns:
         str: Newline-separated list of "sender: subject"
@@ -69,9 +69,9 @@ def read_email(email_id: str, cred_filepath: Optional[str] = None) -> str:
     """Retrieve content of a specific email using Gmail API.
     
     Args:
-        cred_filepath: Path to credentials.json file
         email_id: Unique identifier of the email to read
-        
+        cred_filepath: Path to credentials.json file (optional - uses env vars by default)
+
     Returns:
         str: Formatted email content
     
@@ -88,9 +88,9 @@ def archive_emails(email_id: str, cred_filepath: Optional[str] = None) -> str:
     """Archive a specific email using Gmail API.
     
     Args:
-        cred_filepath: Path to credentials.json file
         email_id: Unique identifier of the email to archive
-        
+        cred_filepath: Path to credentials.json file (optional - uses env vars by default)
+
     Returns:
         str: Success/error message
     
