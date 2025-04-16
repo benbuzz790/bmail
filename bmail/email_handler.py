@@ -7,13 +7,19 @@ import base64
 from bmail.auth import get_gmail_service
 from bmail import gmail_client
 
-def _get_service(creds_path: str) -> Union[str, object]:
-    """Get Gmail service using credentials and delegated email from environment."""
+def _get_service(creds_path: str, use_sender: bool = True) -> Union[str, object]:
+    """Get Gmail service using credentials and delegated email from environment.
+    
+    Args:
+        creds_path: Path to credentials file
+        use_sender: If True, use BMAIL_SENDER, otherwise use BMAIL_TEST_EMAIL
+    """
     try:
-        delegated_email = os.environ['BMAIL_TEST_EMAIL']
+        env_var = 'BMAIL_SENDER' if use_sender else 'BMAIL_TEST_EMAIL'
+        delegated_email = os.environ[env_var]
         return get_gmail_service(creds_path, delegated_email)
     except KeyError:
-        return "Error: BMAIL_TEST_EMAIL environment variable not set"
+        return f"Error: {env_var} environment variable not set"
 
 def send_email(creds_path: str, to_addr: str, cc: str, bcc: str, subject: str, body: str) -> str:
     """Send an email using Gmail API.
@@ -67,33 +73,35 @@ def receive_email(creds_path: str, email_id: str) -> str:
     except Exception as e:
         return f'Error parsing email content: {str(e)}'
 
-def archive_email(creds_path: str, email_id: str) -> str:
+def archive_email(creds_path: str, email_id: str, use_sender: bool = True) -> str:
     """Archive an email.
 
     Args:
         creds_path (str): Path to Gmail API credentials file
         email_id (str): ID of email to archive
+        use_sender (bool): If True, use BMAIL_SENDER account, else use TEST_EMAIL
 
     Returns:
         str: Success message or error description
     """
     gmail_id = email_id.replace('.eml', '') if email_id.endswith('.eml') else email_id
-    service = _get_service(creds_path)
+    service = _get_service(creds_path, use_sender)
     if isinstance(service, str):
         return f'Authentication error: {service}'
     return gmail_client.archive_email(service, gmail_id)
-
-def list_emails(creds_path: str, query: str=None) -> str:
+def list_emails(creds_path: str, query: str=None, use_sender: bool=True) -> str:
     """List emails in the inbox.
 
     Args:
         creds_path (str): Path to Gmail API credentials file
         query (str, optional): Gmail search query to filter results
+        use_sender (bool): If True, use BMAIL_SENDER account, else use TEST_EMAIL
 
     Returns:
         str: Newline-separated list of "sender: subject" or error message
     """
-    service = _get_service(creds_path)
+    service = _get_service(creds_path, use_sender)
     if isinstance(service, str):
         return f'Authentication error: {service}'
+    return gmail_client.list_emails(service, query=query)
     return gmail_client.list_emails(service, query=query)

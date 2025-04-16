@@ -27,13 +27,30 @@ class TestLLMEmailTools(unittest.TestCase):
         time.sleep(5)
 
     def test_2_check_inbox(self):
-        """Test inbox listing."""
+        """Test inbox listing using sender account."""
+        # First check that inbox is being checked from sender account
         result = llm_email_tools.check_inbox(cred_filepath=self.cred_filepath)
         self.assertIsInstance(result, str)
-        result = llm_email_tools.check_inbox(query=f'subject:"{self.test_subject}"', cred_filepath=self.cred_filepath)
+        
+        # Send test email to sender account
+        send_result = llm_email_tools.send_email(
+            to=self.sender,  # Send to sender account
+            cc='',
+            bcc='',
+            subject=self.test_subject,
+            body=self.test_body,
+            cred_filepath=self.cred_filepath
+        )
+        self.assertTrue('successfully' in send_result.lower())
+        time.sleep(5)  # Wait for email to arrive
+        
+        # Check sender's inbox for the test email
+        result = llm_email_tools.check_inbox(
+            query=f'subject:"{self.test_subject}"',
+            cred_filepath=self.cred_filepath
+        )
         self.assertIsInstance(result, str)
-        self.assertTrue(self.test_subject in result)
-        self.assertTrue(self.test_subject in result, 'Test subject not found in search results')
+        self.assertTrue(self.test_subject in result, 'Test subject not found in sender inbox')
 
     def test_3_read_and_reply(self):
         """Test reading and replying to the test email."""
@@ -48,21 +65,41 @@ class TestLLMEmailTools(unittest.TestCase):
 
     def test_4_archive(self):
         """Test archiving the test email and verify it's removed from inbox."""
-        self.assertIsNotNone(self.email_id, 'No test email ID available')
+        # Create unique subject for this test
+        test_subject = f"Archive Test {time.time()}"
         
-        # First verify email exists in inbox
-        pre_archive = llm_email_tools.check_inbox(query=f'subject:"{self.test_subject}"', cred_filepath=self.cred_filepath)
-        self.assertTrue(self.test_subject in pre_archive, 'Test email not found in inbox before archiving')
+        # Send a test email to the sender account first
+        send_result = llm_email_tools.send_email(
+            to=self.sender,
+            cc='',
+            bcc='',
+            subject=test_subject,
+            body="This is a test email for archiving",
+            cred_filepath=self.cred_filepath
+        )
+        self.assertTrue('successfully' in send_result.lower())
+        email_id = send_result.split('Message ID: ')[1]
+        time.sleep(5)  # Wait for email to arrive
+        
+        # Verify the test email exists in sender's inbox
+        pre_archive = llm_email_tools.check_inbox(
+            query=f'subject:"{test_subject}"',
+            cred_filepath=self.cred_filepath
+        )
+        self.assertTrue(test_subject in pre_archive, 'Test email not found in sender inbox before archiving')
         
         # Archive the email
-        result = llm_email_tools.archive_emails(self.email_id, self.cred_filepath)
-        self.assertTrue('successfully' in result.lower())
+        result = llm_email_tools.archive_emails(email_id, self.cred_filepath)
+        self.assertTrue('successfully' in result.lower(), f"Archive failed with result: {result}")
         
         # Allow time for Gmail API to process the archive operation
         time.sleep(5)
         
-        # Verify email no longer appears in inbox
-        post_archive = llm_email_tools.check_inbox(query=f'subject:"{self.test_subject}"', cred_filepath=self.cred_filepath)
-        self.assertNotIn(self.test_subject, post_archive, 'Test email still found in inbox after archiving')
+        # Verify email no longer appears in sender's inbox
+        post_archive = llm_email_tools.check_inbox(
+            query=f'subject:"{test_subject}"',
+            cred_filepath=self.cred_filepath
+        )
+        self.assertNotIn(test_subject, post_archive, 'Test email still found in sender inbox after archiving')
 if __name__ == '__main__':
     unittest.main()
