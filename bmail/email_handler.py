@@ -7,7 +7,7 @@ import base64
 from bmail.auth import get_gmail_service
 from bmail import gmail_client
 
-def _get_service(creds_path: str, use_sender: bool = True) -> Union[str, object]:
+def _get_service(creds_path: str, use_sender: bool=True) -> Union[str, object]:
     """Get Gmail service using credentials and delegated email from environment.
     
     Args:
@@ -19,9 +19,9 @@ def _get_service(creds_path: str, use_sender: bool = True) -> Union[str, object]
         delegated_email = os.environ[env_var]
         return get_gmail_service(creds_path, delegated_email)
     except KeyError:
-        return f"Error: {env_var} environment variable not set"
+        return f'Error: {env_var} environment variable not set'
 
-def send_email(creds_path: str, to_addr: str, cc: str, bcc: str, subject: str, body: str) -> str:
+def send_email(creds_path: str, to_addr: str, cc: str, bcc: str, subject: str, body: str, thread_id: str=None, in_reply_to: str=None, references: str=None) -> str:
     """Send an email using Gmail API.
 
     Args:
@@ -31,6 +31,9 @@ def send_email(creds_path: str, to_addr: str, cc: str, bcc: str, subject: str, b
         bcc (str): BCC recipients (comma-separated)
         subject (str): Email subject
         body (str): Email body text
+        thread_id (str, optional): Gmail thread ID for replies
+        in_reply_to (str, optional): Message-ID being replied to
+        references (str, optional): References header for threading
 
     Returns:
         str: Success message or error description
@@ -38,7 +41,7 @@ def send_email(creds_path: str, to_addr: str, cc: str, bcc: str, subject: str, b
     service = _get_service(creds_path)
     if isinstance(service, str):
         return f'Authentication error: {service}'
-    return gmail_client.send_gmail(service, to_addr, cc, bcc, subject, body)
+    return gmail_client.send_gmail(service, to_addr, cc, bcc, subject, body, thread_id, in_reply_to, references)
 
 def receive_email(creds_path: str, email_id: str) -> str:
     """Receive a specific email.
@@ -56,24 +59,36 @@ def receive_email(creds_path: str, email_id: str) -> str:
     result = gmail_client.get_email(service, email_id)
     if isinstance(result, str):
         return result
+    if not isinstance(result, tuple) or len(result) != 2:
+        return 'Error: Unexpected response format from gmail_client'
+    raw_content, metadata = result
     try:
-        email_msg = message_from_string(result.decode('utf-8'))
+        from email import message_from_bytes
+        email_msg = message_from_bytes(raw_content)
         formatted_content = []
         formatted_content.append(f"From: {email_msg['from']}")
         formatted_content.append(f"Subject: {email_msg['subject']}")
         formatted_content.append(f"To: {email_msg['to']}")
+        if metadata.get('message_id'):
+            formatted_content.append(f"Message-ID: {metadata['message_id']}")
+        if metadata.get('thread_id'):
+            formatted_content.append(f"Thread-ID: {metadata['thread_id']}")
         formatted_content.append('\nBody:')
         if email_msg.is_multipart():
             for part in email_msg.walk():
                 if part.get_content_type() == 'text/plain':
-                    formatted_content.append(part.get_payload())
+                    formatted_content.append(part.get_payload(decode=True).decode('utf-8'))
         else:
-            formatted_content.append(email_msg.get_payload())
+            payload = email_msg.get_payload(decode=True)
+            if payload:
+                formatted_content.append(payload.decode('utf-8'))
+            else:
+                formatted_content.append(email_msg.get_payload())
         return '\n'.join(formatted_content)
     except Exception as e:
         return f'Error parsing email content: {str(e)}'
 
-def archive_email(creds_path: str, email_id: str, use_sender: bool = True) -> str:
+def archive_email(creds_path: str, email_id: str, use_sender: bool=True) -> str:
     """Archive an email.
 
     Args:
@@ -89,6 +104,7 @@ def archive_email(creds_path: str, email_id: str, use_sender: bool = True) -> st
     if isinstance(service, str):
         return f'Authentication error: {service}'
     return gmail_client.archive_email(service, gmail_id)
+
 def list_emails(creds_path: str, query: str=None, use_sender: bool=True) -> str:
     """List emails in the inbox.
 
