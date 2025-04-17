@@ -29,21 +29,39 @@ def reply_to_email(email_id: str, body: str, sender: str, cred_filepath: Optiona
     Args:
         email_id: Unique identifier of the email to reply to
         body: Reply message body
-        sender: Email address to send from
+        sender: Email address to send from (typically BMAIL_SENDER)
         cred_filepath: Path to credentials.json file (optional - uses env vars by default)
 
     Returns:
         str: Success/error message
 
     Example:
-        >>> reply_to_email("credentials.json", "12345", "Thanks for your email", "user@example.com")
+        >>> reply_to_email("12345", "Thanks for your email", "bot@example.com")
         "Reply sent successfully"
     """
     creds = cred_filepath or os.environ['BMAIL_CREDENTIALS_PATH']
-    receive_result = email_handler.receive_email(creds, email_id)
-    if receive_result.startswith('Error'):
-        return receive_result
-    return email_handler.send_email(creds, sender, '', '', 'Re: TEST EMAIL', body)
+    
+    # Get the original email content
+    original = email_handler.receive_email(creds, email_id)
+    if original.startswith('Error'):
+        return original
+        
+    # Parse the original email content
+    lines = original.split('\n')
+    from_line = next((l for l in lines if l.startswith('From: ')), '')
+    subject_line = next((l for l in lines if l.startswith('Subject: ')), '')
+    
+    if not from_line or not subject_line:
+        return "Error: Could not parse original email headers"
+        
+    # Extract original sender's email (will be our reply recipient)
+    original_sender = from_line.replace('From: ', '').strip()
+    # Get original subject and ensure it has Re: prefix
+    original_subject = subject_line.replace('Subject: ', '').strip()
+    reply_subject = original_subject if original_subject.startswith('Re:') else f'Re: {original_subject}'
+    
+    # Send reply back to original sender
+    return email_handler.send_email(creds, original_sender, '', '', reply_subject, body)
 
 def check_inbox(query: str=None, cred_filepath: Optional[str] = None) -> str:
     """List inbox contents using Gmail API.
